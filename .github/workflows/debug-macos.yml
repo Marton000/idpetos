@@ -1,4 +1,4 @@
-name: Debug macOS Build
+name: Debug macOS Install
 
 on:
   workflow_dispatch:
@@ -17,16 +17,15 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Debug npm install
+      - name: npm install (capture log)
+        continue-on-error: true
         run: |
-          echo "=== Node version ==="
-          node --version
-          npm --version
-          echo "=== npm config ==="
-          npm config list
-          echo "=== ls before ==="
-          ls -la
-          echo "=== npm install ==="
-          npm install --loglevel verbose 2>&1 || echo "INSTALL FAILED"
-          echo "=== ls after ==="
-          ls -la node_modules/.bin/ 2>/dev/null || echo "no node_modules/.bin"
+          npm install 2>&1 | tee install-log.txt
+          echo "EXIT_CODE=$?" >> $GITHUB_ENV
+
+      - name: Upload install log
+        uses: actions/upload-artifact@v4
+        with:
+          name: install-log
+          path: install-log.txt
+          retention-days: 1
