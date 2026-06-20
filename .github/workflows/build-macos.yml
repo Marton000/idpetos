@@ -13,7 +13,7 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-14
+    runs-on: macos-13
 
     steps:
       - name: Checkout
@@ -22,15 +22,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: '20'
 
-      - name: Remove Windows lockfile and reinstall for macOS
-        run: |
-          rm -f package-lock.json
-          npm install
+      - name: Install
+        run: rm -f package-lock.json && npm install
 
       - name: Build
-        run: npm run build:mac
+        run: npx electron-builder --mac --x64
 
       - name: Upload
         uses: actions/upload-artifact@v4
