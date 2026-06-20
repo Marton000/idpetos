@@ -1,0 +1,32 @@
+name: Debug macOS Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: macos-13
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Debug npm install
+        run: |
+          echo "=== Node version ==="
+          node --version
+          npm --version
+          echo "=== npm config ==="
+          npm config list
+          echo "=== ls before ==="
+          ls -la
+          echo "=== npm install ==="
+          npm install --loglevel verbose 2>&1 || echo "INSTALL FAILED"
+          echo "=== ls after ==="
+          ls -la node_modules/.bin/ 2>/dev/null || echo "no node_modules/.bin"
