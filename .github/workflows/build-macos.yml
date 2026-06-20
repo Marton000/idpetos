@@ -7,9 +7,6 @@ on:
         description: 'Version number'
         required: true
         default: '1.0.7'
-  push:
-    branches:
-      - main
 
 jobs:
   build-macos:
@@ -26,7 +23,7 @@ jobs:
           node-version: '20'
 
       - name: Install
-        run: npm install
+        run: npm install --verbose 2>&1 | tail -50
 
       - name: Build
         run: npx electron-builder --mac --x64
