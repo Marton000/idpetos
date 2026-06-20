@@ -4,16 +4,25 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version number (e.g., 1.0.7)'
+        description: 'Version number'
         required: true
         default: '1.0.7'
   push:
     branches:
       - main
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'main.js'
+      - 'index_new.html'
+      - 'preload.js'
+      - 'icon.ico'
+      - 'scripts/**'
+      - '.github/workflows/**'
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
       - name: Checkout code
@@ -22,10 +31,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Windows app
         run: npm run build:win
@@ -33,26 +43,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: List output files
-        run: |
-          Write-Host "Build completed!"
-          Get-ChildItem -Path dist -ErrorAction SilentlyContinue | Format-Table Name, Length
+        run: Get-ChildItem -Path dist -ErrorAction SilentlyContinue | Format-Table Name, Length
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-${{ github.run_number }}
+          name: windows-build
           path: |
             dist/*.exe
             dist/latest.yml
           retention-days: 30
-
-      - name: Display build info
-        run: |
-          Write-Host ""
-          Write-Host "========================================"
-          Write-Host "Build Summary"
-          Write-Host "========================================"
-          Write-Host "Version: ${{ github.event.inputs.version || '1.0.7' }}"
-          Write-Host "Build Number: ${{ github.run_number }}"
-          Write-Host "========================================"
-          Write-Host "Artifacts uploaded successfully!"
