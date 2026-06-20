@@ -33,27 +33,39 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Show Node/npm versions
+        run: |
+          node --version
+          npm --version
+          which node
+          which npm
+
+      - name: Show disk space
+        run: df -h
+
       - name: Install dependencies
-        run: npm install
+        run: npm install --verbose
+
+      - name: Show installed binaries
+        run: ls node_modules/.bin/ | head -20
 
       - name: Build macOS app
-        run: npm run build:mac
+        run: npx electron-builder --mac --dir
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: List output files
+      - name: List output
         run: |
-          echo "=== dist contents ==="
-          ls -la dist/ 2>/dev/null || echo "dist/ not found"
-          echo "=== dist subdirs ==="
-          find dist/ -type f 2>/dev/null | head -20 || echo "no files found"
+          echo "=== dist ==="
+          ls -la dist/ 2>/dev/null || echo "no dist"
+          echo "=== dist/mac ==="
+          ls -la dist/mac*/ 2>/dev/null || echo "no mac dir"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos-build
           path: |
-            dist/*.dmg
-            dist/*.zip
-            dist/latest.yml
+            dist/
+            package.json
           retention-days: 30
