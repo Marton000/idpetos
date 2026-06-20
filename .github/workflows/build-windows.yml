@@ -1,0 +1,58 @@
+name: Build Windows Application
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.7)'
+        required: true
+        default: '1.0.7'
+  push:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Windows app
+        run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List output files
+        run: |
+          Write-Host "Build completed!"
+          Get-ChildItem -Path dist -ErrorAction SilentlyContinue | Format-Table Name, Length
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-build-${{ github.run_number }}
+          path: |
+            dist/*.exe
+            dist/latest.yml
+          retention-days: 30
+
+      - name: Display build info
+        run: |
+          Write-Host ""
+          Write-Host "========================================"
+          Write-Host "Build Summary"
+          Write-Host "========================================"
+          Write-Host "Version: ${{ github.event.inputs.version || '1.0.7' }}"
+          Write-Host "Build Number: ${{ github.run_number }}"
+          Write-Host "========================================"
+          Write-Host "Artifacts uploaded successfully!"

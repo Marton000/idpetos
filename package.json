@@ -1,0 +1,71 @@
+{
+  "name": "idpetos",
+  "version": "1.0.7",
+  "description": "Desktop Pet Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win && node -e \"const fs=require('fs');const path=require('path');const crypto=require('crypto');const pkg=JSON.parse(fs.readFileSync('package.json','utf-8'));const v=pkg.version;const date=new Date().toISOString();const nsisExe='Idpetos Setup '+v+'.exe';const portableExe='Idpetos '+v+'.exe';const nsisPath=path.join('dist',nsisExe);const portablePath=path.join('dist',portableExe);const sha512=(f)=>crypto.createHash('sha512').update(fs.readFileSync(f)).digest('hex');let nsisSize='',portableSize='',nsisSha='',portableSha='';try{nsisSize=fs.statSync(nsisPath).size.toString();nsisSha=sha512(nsisPath);}catch(e){}try{portableSize=fs.statSync(portablePath).size.toString();portableSha=sha512(portablePath);}catch(e){}const yml='version: '+v+'\nreleaseDate: \"'+date+'\"\nfiles:\n  - url: '+nsisExe+'\n    size: '+nsisSize+'\n    sha512: '+nsisSha+'\n  - url: '+portableExe+'\n    size: '+portableSize+'\n    sha512: '+portableSha+'\npath: '+nsisExe+'\nsha512: '+nsisSha+'\n';if(!fs.existsSync('dist'))fs.mkdirSync('dist');fs.writeFileSync('dist/latest.yml',yml);console.log('Generated dist/latest.yml');\"",
+    "build:mac": "electron-builder --mac && node -e \"const fs=require('fs');const path=require('path');const crypto=require('crypto');const pkg=JSON.parse(fs.readFileSync('package.json','utf-8'));const v=pkg.version;const date=new Date().toISOString();const dmgFile='Idpetos-'+v+'.dmg';const zipFile='Idpetos-'+v+'.zip';const sha512=(f)=>crypto.createHash('sha512').update(fs.readFileSync(f)).digest('hex');let dmgSize='',dmgSha='',zipSize='',zipSha='';try{dmgSize=fs.statSync('dist/'+dmgFile).size.toString();dmgSha=sha512('dist/'+dmgFile);}catch(e){console.log('DMG not found:',e.message);}try{zipSize=fs.statSync('dist/'+zipFile).size.toString();zipSha=sha512('dist/'+zipFile);}catch(e){console.log('ZIP not found:',e.message);}const yml='version: '+v+'\nreleaseDate: \"'+date+'\"\nfiles:\n'+(dmgSize?'  - url: '+dmgFile+'\n    size: '+dmgSize+'\n    sha512: '+dmgSha+'\n':'')+(zipSize?'  - url: '+zipFile+'\n    size: '+zipSize+'\n    sha512: '+zipSha+'\n':'')+'path: '+dmgFile+'\nsha512: '+dmgSha+'\n';fs.writeFileSync('dist/latest.yml',yml);console.log('Generated dist/latest.yml for macOS');console.log('DMG:',dmgFile,'Size:',dmgSize);console.log('ZIP:',zipFile,'Size:',zipSize);\""
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.idmanos.idpetos",
+    "productName": "Idpetos",
+    "files": [
+      "main.js",
+      "index_new.html",
+      "preload.js",
+      "icon.ico",
+      "icon.icns"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "icon.ico",
+      "artifactName": "Idpetos Setup ${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "icon.icns",
+      "category": "public.app-category.utilities",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "title": "Idpetos",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "publish": {
+      "provider": "generic",
+      "url": "https://update.idmanos.com/windows"
+    },
+    "generateUpdatesFilesForAllChannels": true
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3"
+  }
+}
