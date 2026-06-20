@@ -10,62 +10,32 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'package.json'
-      - 'package-lock.json'
-      - 'main.js'
-      - 'index_new.html'
-      - 'preload.js'
-      - 'icon.ico'
-      - 'scripts/**'
-      - '.github/workflows/**'
 
 jobs:
   build-macos:
     runs-on: macos-14
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: lts/*
 
-      - name: Show Node/npm versions
-        run: |
-          node --version
-          npm --version
-          which node
-          which npm
+      - name: Install dependencies (using official npm registry)
+        run: npm install --registry=https://registry.npmjs.org
 
-      - name: Show disk space
-        run: df -h
+      - name: Build
+        run: npm run build:mac --registry=https://registry.npmjs.org
 
-      - name: Install dependencies
-        run: npm install --verbose
-
-      - name: Show installed binaries
-        run: ls node_modules/.bin/ | head -20
-
-      - name: Build macOS app
-        run: npx electron-builder --mac --dir
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: List output
-        run: |
-          echo "=== dist ==="
-          ls -la dist/ 2>/dev/null || echo "no dist"
-          echo "=== dist/mac ==="
-          ls -la dist/mac*/ 2>/dev/null || echo "no mac dir"
-
-      - name: Upload artifacts
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: macos-build
           path: |
-            dist/
-            package.json
-          retention-days: 30
+            dist/*.dmg
+            dist/*.zip
+            dist/latest.yml
+          retention-days: 7
