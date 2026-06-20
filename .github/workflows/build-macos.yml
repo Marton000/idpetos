@@ -24,11 +24,13 @@ jobs:
         with:
           node-version: lts/*
 
-      - name: Install dependencies (using official npm registry)
-        run: npm install --registry=https://registry.npmjs.org
+      - name: Remove Windows lockfile and reinstall for macOS
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Build
-        run: npm run build:mac --registry=https://registry.npmjs.org
+        run: npm run build:mac
 
       - name: Upload
         uses: actions/upload-artifact@v4
