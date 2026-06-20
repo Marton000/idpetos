@@ -7,49 +7,48 @@ on:
         description: 'Version number (e.g., 1.0.7)'
         required: true
         default: '1.0.7'
-  push:
-    branches:
-      - main
 
 jobs:
   build-macos:
     runs-on: macos-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
 
       - name: Install dependencies
         run: npm install
+        env:
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
 
       - name: Check icon file
         run: |
           if [ -f "icon.icns" ]; then
-            echo "✓ icon.icns found"
+            echo "icon.icns found"
           else
-            echo "⚠ Warning: icon.icns not found"
-            echo "Will use default Electron icon"
+            echo "Warning: icon.icns not found, will use default Electron icon"
           fi
 
       - name: Build macOS app
         run: npm run build:mac
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
 
       - name: List output files
         run: |
           echo "Build completed!"
-          echo ""
           echo "Output files:"
           ls -lh dist/ 2>/dev/null || echo "No dist folder found"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-build-${{ github.run_number }}
           path: |
@@ -58,29 +57,14 @@ jobs:
             dist/latest.yml
           retention-days: 30
 
-      - name: Generate checksums
-        run: |
-          VERSION=${{ github.event.inputs.version || '1.0.7' }}
-          if [ -f "dist/Idpetos-$VERSION.dmg" ]; then
-            echo "DMG Checksum (SHA256):"
-            shasum -a 256 "dist/Idpetos-$VERSION.dmg"
-          fi
-          if [ -f "dist/Idpetos-$VERSION.zip" ]; then
-            echo ""
-            echo "ZIP Checksum (SHA256):"
-            shasum -a 256 "dist/Idpetos-$VERSION.zip"
-          fi
-
       - name: Display build info
         run: |
+          VERSION=${{ github.event.inputs.version || '1.0.7' }}
           echo ""
           echo "========================================"
           echo "Build Summary"
           echo "========================================"
-          echo "Version: ${{ github.event.inputs.version || '1.0.7' }}"
+          echo "Version: $VERSION"
           echo "Build Number: ${{ github.run_number }}"
-          echo "Build ID: ${{ github.run_id }}"
           echo "========================================"
-          echo ""
           echo "Artifacts uploaded successfully!"
-          echo "Download from the Artifacts section above."
