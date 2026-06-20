@@ -6,8 +6,7 @@
   "scripts": {
     "start": "electron .",
     "build:win": "electron-builder --win && node scripts/generate-latest.js",
-    "build:mac": "electron-builder --mac && node scripts/generate-latest.js",
-    "postinstall": "electron-builder install-app-deps"
+    "build:mac": "electron-builder --mac && node scripts/generate-latest.js"
   },
   "devDependencies": {
     "electron": "^28.0.0",
